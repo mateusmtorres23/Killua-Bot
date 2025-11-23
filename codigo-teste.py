@@ -1,0 +1,76 @@
+# Codigo para o teste do agente de geração de UML no n8n
+
+class Product:
+    def __init__(self, name='', price=0,) -> None:
+        self.name = name
+        self.price = price
+    
+    def sell(self):
+        amount = int(input(f'\nhow much of {self.name} do you want?'))
+        print(f'That costed you {self.price * amount}!!')
+
+class Paint(Product):
+    def __init__(self, name='', price=0, colour='', finish = '') -> None:
+        super().__init__(name, price)
+        self.colour = colour
+        self.finish = finish
+
+class Cement(Product):
+    def __init__(self, name='', price=0, durability = 1) -> None:
+        super().__init__(name, price)
+        self.durability = durability
+
+class Brick(Product):
+    def __init__(self, name='', price=0, composition = '') -> None:
+        super().__init__(name, price)
+        self.composition = composition
+
+def get_paint_details():
+    colours_map = {1:'Red', 2:'Blue', 3:'White'}
+    finishes_map ={1:'Matte', 2:'Glossy'}
+
+    while True:
+        try:
+            print('\nHow you want your paint?')
+            clr_ans = int(input(f'Select colour: {colours_map}\n(1/2/3): '))
+            fin_ans = int(input(f'Select finish: {finishes_map}\n(1/2/3): '))
+
+            if clr_ans in colours_map and fin_ans in finishes_map:
+                colour = colours_map[clr_ans]
+                finish = finishes_map[fin_ans]
+                return Paint(name=f"{finish} {colour}", price= 50, colour= colour, finish=finish)
+            else:
+                print('Invalid colour or finish selection. Try again.')
+        except ValueError:
+            print('Invalid input format. Please enter a number')
+
+def menu():
+    PRODUCT_MAP = {
+        1: get_paint_details,
+        2: lambda: Cement(name="Structural Cement Bag", price=25.50, durability=5),
+        3: lambda: Brick(name="Red Clay Brick (100 units)", price=75.00),
+    }
+
+    while True:
+        try:
+            answer = int(input(
+                """\nWelcome to our store, what do you want to buy today?\nPaint - 1\nCement - 2\nBricks - 3\nExit - 0\nanswer with one the numbers above - """))
+            
+            if answer == 0:
+                print("Thank you for visiting. Exiting program.")
+                break
+            
+            # Data-driven execution based on the PRODUCT_MAP
+            if answer in PRODUCT_MAP:
+                # The map value is a function (or lambda) that returns the instantiated item
+                item = PRODUCT_MAP[answer]()
+                item.sell() 
+            else:
+                print('Invalid selection. Enter a digit between 0 and 3.')
+
+        except ValueError:
+            print("Invalid input format. Please enter a number.")
+        except Exception as e:
+            print(f"An unexpected error occurred: {type(e).__name__}: {e}")
+
+menu()
