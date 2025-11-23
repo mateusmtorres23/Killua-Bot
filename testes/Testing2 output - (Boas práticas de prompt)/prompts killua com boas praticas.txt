@@ -1,0 +1,53 @@
+================================================================
+ARQUIVO DE PROMPTS PARA TESTE DE PRECISÃO - KILLUA BOT
+================================================================
+
+Este documento contém os prompts otimizados para validar a inteligência 
+do bot na geração de diagramas UML (PlantUML).
+
+----------------------------------------------------------------
+1. DIAGRAMA DE CLASSES (/genClass)
+----------------------------------------------------------------
+OBJETIVO: 
+Forçar a distinção entre Herança (Seta Sólida) e Dependência (Seta Tracejada).
+A IA deve entender que 'Main' apenas usa as classes, enquanto 'Paint' é filha de 'Product'.
+
+PROMPT:
+/genClass plantuml Analise o código abaixo. Modele uma hierarquia onde Paint, Cement e Brick herdam de Product. Crie uma classe utilitária "Main" que representa o script e o menu, e crie relações de dependência (tracejadas) dela para as subclasses, pois ela as instancia. Mostre atributos e métodos.
+
+[COLE O CÓDIGO PYTHON AQUI]
+
+----------------------------------------------------------------
+2. DIAGRAMA DE ATIVIDADES / FLUXO (/genFlow)
+----------------------------------------------------------------
+OBJETIVO: 
+Testar a interpretação de texto (NLP) sem depender do código. 
+A IA deve mapear loops de repetição, validação de erro e convergência de fluxo.
+
+PROMPT:
+/genFlow plantuml Crie um diagrama de atividades para um sistema de vendas de material de construção que roda em um loop infinito (Menu Principal).
+
+1. O sistema exibe opções (1-Tinta, 2-Cimento, 3-Tijolo, 0-Sair) e pede um input numérico.
+2. Se o input não for número, exibe erro e repete o menu.
+3. Se for 0, encerra o programa (Fim).
+4. Se for opção inválida (fora de 0-3), avisa e repete.
+5. Se for 1 (Tinta), inicia um sub-fluxo de validação: pede Cor e Acabamento num loop até que o usuário digite opções válidas presentes no sistema.
+6. Se for 2 ou 3, instancia o produto direto.
+7. Após selecionar qualquer produto (1, 2 ou 3), o sistema pergunta a quantidade desejada, calcula o total (preço * quantidade), exibe o valor na tela e retorna obrigatoriamente para o início do Menu Principal.
+
+----------------------------------------------------------------
+3. DIAGRAMA DE CASOS DE USO (/genCase)
+----------------------------------------------------------------
+OBJETIVO: 
+Garantir a identificação da relação <<include>>.
+A IA deve entender que a compra de tinta possui um requisito obrigatório 
+(escolher detalhes) que a diferencia dos outros produtos.
+
+PROMPT:
+/genCase plantuml Ator: Cliente. Casos de Uso baseados no menu: Comprar Tinta, Cimento, Tijolo e Sair. Atenção Crítica: A função 'get_paint_details' é obrigatória para a Tinta, portanto, crie um caso de uso "Selecionar Detalhes" que tenha uma relação de <<include>> com "Comprar Tinta".
+
+[COLE O CÓDIGO PYTHON AQUI]
+
+================================================================
+FIM DO ARQUIVO
+================================================================
