@@ -72,7 +72,8 @@ Criando o Bot no Telegram
 
         Verifique se ele está usando a credencial correta.
 
-        Importante: O n8n deve reconhecer a URL do Ngrok automaticamente se configurado via variáveis de ambiente, mas para testes rápidos, certifique-se de que o n8n está acessível externamente.
+        Importante: O n8n deve reconhecer a URL do Ngrok automaticamente se configurado via variáveis de
+        ambiente, mas para testes rápidos, certifique-se de que o n8n está acessível externamente.
 
 🚀 Guia de Uso
 
