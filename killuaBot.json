@@ -1,0 +1,740 @@
+{
+  "name": "Kilua-Bot",
+  "nodes": [
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -848,
+        560
+      ],
+      "id": "aa73aca3-3622-479c-a24b-83b2bc6cfe48",
+      "name": "Telegram Trigger",
+      "webhookId": "907451d0-652c-40ba-8731-bceb86c02cd0",
+      "credentials": {
+        "telegramApi": {
+          "id": "qTKt1TZGeS7BHo6X",
+          "name": "Killua"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Pegar o JSON da primeira entrada (padrão do Telegram Trigger)\nconst input = items[0] && items[0].json ? items[0].json : { message: { text: \"\", chat: { id: null } } };\n\nconst mensagem = (input.message && input.message.text) ? input.message.text.trim() : \"\";\nconst chat_id = (input.message && input.message.chat && input.message.chat.id) ? input.message.chat.id : null;\n\nconst comandosBasicos = [\"/menu\", \"/help\", \"/genclass\", \"/genflow\", \"/gencase\", \"/start\"];\n\n// --- LÓGICA DE PARSING ---\nconst isComando = mensagem.startsWith(\"/\");\nconst partes = mensagem.split(' ');\nconst comandoRecebido = partes[0].toLowerCase(); // Convertendo para minúsculo para evitar erros\n\n// --- NOVA LÓGICA DE DETECÇÃO DE FERRAMENTA ---\nlet ferramenta = 'plantuml'; // <--- AQUI MUDOU: O padrão agora é PlantUML\nlet inicioDescricao = 1; // Começa a ler a descrição após o comando (palavra índice 1)\n\n// Se a mensagem tiver mais de uma palavra E a segunda palavra for uma ferramenta conhecida\n// (Isso permite que o usuário force 'mermaid' se quiser, digitando: /genclass mermaid ...)\nif (partes.length > 1 && (partes[1].toLowerCase() === 'plantuml' || partes[1].toLowerCase() === 'mermaid')) {\n    ferramenta = partes[1].toLowerCase();\n    inicioDescricao = 2; // A descrição agora começa depois da ferramenta (palavra índice 2)\n}\n\n// Reconstrói a descrição a partir do ponto correto\nconst descricao = partes.slice(inicioDescricao).join(' ');\n\n// Verifica se o comando recebido está na nossa lista\nconst isValido = comandosBasicos.includes(comandoRecebido);\n// -------------------------\n\n// Retorna o objeto JSON limpo para os próximos nós\nreturn [\n  {\n    json: {\n      chat_id: chat_id,\n      mensagemCompleta: mensagem,\n      isComando: isComando,\n      isValido: isValido,\n      comando: comandoRecebido,\n      ferramenta: ferramenta,\n      descricao: descricao\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -640,
+        560
+      ],
+      "id": "f1a9af83-5984-486c-b363-fad285fbf6f2",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "c19fa04d-eb3e-4098-acff-88d05a6b7b45",
+              "leftValue": "={{ $json.isValido }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -432,
+        560
+      ],
+      "id": "2d3206e0-531a-46a4-a4c3-b89eef4edfc6",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $('Code in JavaScript').item.json.comando }}",
+                    "rightValue": "/menu",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "b8f06c2e-c56c-45d2-9f7a-f38d772aee75"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "fa3a8430-b7d4-4bdc-aaf3-5e6f8a9e140e",
+                    "leftValue": "={{ $('Code in JavaScript').item.json.comando }}",
+                    "rightValue": "/genclass",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "c38f80ed-669e-4654-ab45-d98114108147",
+                    "leftValue": "={{ $('Code in JavaScript').item.json.comando }}",
+                    "rightValue": "/genflow",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "a2715d5e-b762-4de5-9ffc-c70b5b6483ec",
+                    "leftValue": "={{ $('Code in JavaScript').item.json.comando }}",
+                    "rightValue": "/gencase",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "0e5bd4b4-ad67-45b1-bd94-58e517c7c79a",
+                    "leftValue": "={{ $('Code in JavaScript').item.json.comando }}",
+                    "rightValue": "/help",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "6bcbd1b6-7eb0-47b3-9ba9-7e11932f20aa",
+                    "leftValue": "={{ $('Code in JavaScript').item.json.comando }}",
+                    "rightValue": "/start",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.3,
+      "position": [
+        -256,
+        224
+      ],
+      "id": "75282308-5a26-4bbf-90bd-b9614151c8fd",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $json.chat_id }}",
+        "text": "=👋 *Salve! Eu sou o Killua.*\n\nSou teu parceiro de automação UML. Eu transformo textos e códigos em diagramas visuais num estalar de dedos (ou melhor, em um digitar de dedos).\n\n🚀 *Mudança Importante:*\nAgora utilizo o **PlantUML** como motor padrão. Ele é mais potente e garante que seus diagramas não quebrem, mesmo nos cenários mais complexos.\n_(O Mermaid ainda está disponível como opção, mas use com moderação!)_\n\n📋 *Comandos Rápidos:*\n❄️ `/genClass` - Estrutura e Classes\n❄️ `/genFlow` - Fluxogramas e Lógica\n❄️ `/genCase` - Atores e Requisitos\n❄️ `/menu` - Menu interativo\n\n--------------------------------------------------\n📚 *Documentação Completa:*\nQuer aprender a usar comandos avançados, colar código direto \ne entender as diferenças entre os motores?\n\n👉 [Clique aqui para ler o Manual Oficial do Kilua](https://github.com/JpSeveroo/n8n-Applications/blob/main/n8n_workflows/Kilua/README.md)\n\n_Bora criar uns diagramas insanos?_ 😏❄️\n--------------------------------------------------",
+        "additionalFields": {
+          "parse_mode": "Markdown"
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        32,
+        464
+      ],
+      "id": "cdcd4e4e-ed37-4fb2-90fa-7fa7d512fb17",
+      "name": "/help",
+      "webhookId": "b3c3ea50-3d6d-485c-a9ed-37d17db5c892",
+      "credentials": {
+        "telegramApi": {
+          "id": "qTKt1TZGeS7BHo6X",
+          "name": "Killua"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $json.chat_id }}",
+        "text": "=*👋 Salveee, Killua na voz* . Qual a bronca de hoje? \n\n*Esses são meus comandos:* \n\n❄️ /menu\n❄️ /genClass \n❄️ /genFlow\n❄️ /genCase\n❄️ /help \n\n*⚠️ Se é a primeira vez usando recomendo dar um \"/help\" para ficar por dentro.* \n---------------------------------------------------",
+        "additionalFields": {
+          "parse_mode": "Markdown"
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        0
+      ],
+      "id": "15eac0aa-c060-4084-911c-6eec319db3a3",
+      "name": "/menu",
+      "webhookId": "73144d05-f4a8-4f8c-9c82-2353e27a437f",
+      "credentials": {
+        "telegramApi": {
+          "id": "qTKt1TZGeS7BHo6X",
+          "name": "Killua"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $json.chat_id }}",
+        "text": "=🤖 Opa! Não reconheci esse comando.  Digite /menu para ver todos os comandos disponíveis.",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -128,
+        896
+      ],
+      "id": "6450cffc-6db0-4fae-aaf9-ad410ebf61a4",
+      "name": "escape",
+      "webhookId": "dfabc610-9589-4a44-9495-1f58f03eb270",
+      "credentials": {
+        "telegramApi": {
+          "id": "qTKt1TZGeS7BHo6X",
+          "name": "Killua"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "d58cd0b2-5e2b-4223-b705-d06b4bae4929",
+              "name": "=prompt_ia",
+              "value": "=Você é um gerador automático de diagramas UML. \nSua tarefa é produzir APENAS o código do diagrama, sem qualquer explicação, comentário ou texto adicional.\n\nREGRAS ABSOLUTAS (NÃO QUEBRE):\n1. Você está totalmente PROIBIDO de escrever qualquer frase fora do código UML.\n2. Sua resposta deve começar EXCLUSIVAMENTE pela palavra-chave do diagrama:\n   - Para Mermaid: graph, flowchart, classDiagram, sequenceDiagram, stateDiagram, erDiagram, gantt, pie, usecaseDiagram\n   - Para PlantUML: @startuml\n3. Você está PROIBIDO de escrever qualquer coisa antes ou depois do código.\n4. NÃO escreva markdown (sem ```).\n5. NÃO escreva texto normal.\n6. NÃO explique nada.\n7. NÃO adicione comentários.\n8. NÃO coloque linhas extras fora do diagrama.\n\nENTRADA:\nTipo do comando: {{ $json.comando }}\nFerramenta: {{ $json.ferramenta }}\nDescrição detalhada: {{ $json.descricao }}\n\nSAÍDA:\n- Responda SOMENTE com o diagrama UML correspondente.\n- NÃO coloque texto antes.\n- NÃO coloque texto depois.\n- Gere SOMENTE o código puro.\n\nCASO MERMAID:\n- A saída deve começar imediatamente com a palavra-chave do diagrama escolhida (ex: \"graph TD\" ou \"usecaseDiagram\").\n\nCASO PLANTUML:\n- A saída deve começar com \"@startuml\" e terminar com \"@enduml\".\n\nAGORA GERE APENAS O CÓDIGO PURO:\n",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        0,
+        272
+      ],
+      "id": "9355c2ad-362c-4483-99d5-59aea5889786",
+      "name": "Comandos"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-2.5-pro",
+          "mode": "list",
+          "cachedResultName": "models/gemini-2.5-pro"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "={{ $json.prompt_ia }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1,
+      "position": [
+        320,
+        528
+      ],
+      "id": "6797e75b-d65d-4027-9b59-ae11bda51508",
+      "name": "Message a model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "rD1NtGoi6epbqRFZ",
+          "name": "Kilua Api"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $('Code in JavaScript').item.json.ferramenta }}",
+                    "rightValue": "mermaid",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "e6599fcd-5156-4db9-830a-1aecb0d4be1c"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "4d70fb0c-0d44-42e0-b37f-35d9355a46d8",
+                    "leftValue": "={{ $('Code in JavaScript').item.json.ferramenta }}",
+                    "rightValue": "plantuml",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.3,
+      "position": [
+        832,
+        528
+      ],
+      "id": "330f90ec-0401-4540-83be-96b278f9f36e",
+      "name": "Switch1"
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.url_imagem }}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1424,
+        272
+      ],
+      "id": "c189713d-a455-413a-8de8-54da249432f1",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Pega o texto do diagrama que veio do Gemini\n// Ajuste 'Switch1' se o nome do seu nó anterior for diferente\nconst diagrama = items[0].json.texto_limpo;\n\n// Converte para Base64 (exigido pelo mermaid.ink)\nconst encoded = Buffer.from(diagrama).toString('base64');\n\n// Retorna a URL pronta para o próximo nó usar\nreturn [{\n    json: {\n        url_imagem: `https://mermaid.ink/img/${encoded}`\n    }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1152,
+        272
+      ],
+      "id": "a32ff24d-be3b-49da-9123-b78a028222ae",
+      "name": "Transforming in url mermaid"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Pega o texto do diagrama que veio do Gemini\nconst diagrama = items[0].json.texto_limpo;\n\n// TRUQUE DE MESTRE: Converte para HEX (Hexadecimal)\n// O PlantUML aceita isso se colocarmos '~h' na frente depois.\nconst encoded = Buffer.from(diagrama).toString('hex');\n\nreturn [{\n    json: {\n        // Monta a URL final usando o servidor oficial e o prefixo ~h\n        url_imagem: `http://www.plantuml.com/plantuml/png/~h${encoded}`\n    }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1152,
+        864
+      ],
+      "id": "f3db0684-98ca-4c53-bd21-9283bb4f7df7",
+      "name": "transforming url plantuml"
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.url_imagem }}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1472,
+        864
+      ],
+      "id": "82d1d27e-d402-4902-8e1f-268bce9053aa",
+      "name": "HTTP Request1"
+    },
+    {
+      "parameters": {
+        "operation": "sendPhoto",
+        "chatId": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
+        "binaryData": true,
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1744,
+        608
+      ],
+      "id": "4fe36d0c-5cb2-42fa-8806-06cb1c649b8d",
+      "name": "Send a photo message",
+      "webhookId": "e3f22a70-820a-4e20-87e0-1827822e1854",
+      "credentials": {
+        "telegramApi": {
+          "id": "qTKt1TZGeS7BHo6X",
+          "name": "Killua"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "let texto = items[0].json.content.parts[0].text;\n\n// Remove markdown\ntexto = texto.replace(/```/g, \"\");\n\n// Remove texto ANTES da primeira linha válida do Mermaid:\ntexto = texto.replace(/^.*?(graph|flowchart|classDiagram|sequenceDiagram|erDiagram|gantt|pie|usecaseDiagram)/s, \n    (match) => match.match(/(graph|flowchart|classDiagram|sequenceDiagram|erDiagram|gantt|pie|usecaseDiagram)/)[0]\n);\n\n// Remove lixo depois do diagrama (caso o modelo fale algo no final)\ntexto = texto.replace(/(@enduml|}$)\\s*[\\s\\S]*$/, \"$1\");\n\nreturn [{ json: { texto_limpo: texto }}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        656,
+        528
+      ],
+      "id": "612f9fc6-8b5a-4036-a527-65d809aaafee",
+      "name": "Code in JavaScript1"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $json.chat_id }}",
+        "text": "=⚡ *Dalee! Eu sou o Kilua.*\n_Seu Arquiteto de Software de bolso._\n\nChega de perder tempo arrastando caixinhas. Me descreva seu sistema ou cole seu código, e eu desenho a arquitetura pra você em segundos usando Inteligência Artificial.\n\n🚀 *O que eu construo pra você:*\n🏛️ **Classes** (Estrutura de código)\n🔀 **Fluxogramas** (Lógica e Processos)\n👤 **Casos de Uso** (Requisitos e Atores)\n\n👇 *Por onde começamos?*\nDigite **/menu** para ver as ferramentas \nou **/help** para entender como eu funciono.\n\n_Vamos automatizar essa documentação?_ 👊\n--------------------------------------------------",
+        "additionalFields": {
+          "parse_mode": "Markdown"
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        192,
+        896
+      ],
+      "id": "e06660e1-56ad-422d-9138-a161c4d06917",
+      "name": "/menu1",
+      "webhookId": "73144d05-f4a8-4f8c-9c82-2353e27a437f",
+      "credentials": {
+        "telegramApi": {
+          "id": "qTKt1TZGeS7BHo6X",
+          "name": "Killua"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Telegram Trigger": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "escape",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "/menu",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Comandos",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Comandos",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Comandos",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "/help",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "/menu1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Comandos": {
+      "main": [
+        [
+          {
+            "node": "Message a model",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Message a model": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch1": {
+      "main": [
+        [
+          {
+            "node": "Transforming in url mermaid",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "transforming url plantuml",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Send a photo message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Transforming in url mermaid": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "transforming url plantuml": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request1": {
+      "main": [
+        [
+          {
+            "node": "Send a photo message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript1": {
+      "main": [
+        [
+          {
+            "node": "Switch1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false
+  },
+  "versionId": "09a8310e-1a3a-41fc-ac06-394d8ced6b4c",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "1085cd78b7fc30d287c9ec7f5861ec0098ba84326c3eeabefeced94aa8b6450e"
+  },
+  "id": "Fd5SPbhamu5OiMO0",
+  "tags": []
+}
